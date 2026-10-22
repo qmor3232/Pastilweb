@@ -1,0 +1,263 @@
+/* ==========================================================
+   Pastilicious - style.css
+   Design idea: chicken pastil is rice + shredded chicken
+   wrapped in a banana leaf. So the site uses banana-leaf
+   greens, leaf-vein patterns, "wrapped" cards, and warm
+   chicken-and-egg colors for highlights.
+   ========================================================== */
+
+/* ===== Color theme ===== */
+:root {
+  --green-dark: #1b5e3a;     /* banana leaf (dark) */
+  --green-mid: #3a9560;      /* banana leaf (fresh) */
+  --green-light: #dcf1e1;    /* light leaf */
+  --bg: #f7fcf8;
+  --text: #25302a;
+  --accent: #f4a21e;         /* egg yolk / warm food highlight */
+  --accent-dark: #c9740a;    /* shredded chicken */
+  --rice: #fffdf4;
+  --white: #fff;
+  --shadow: 0 6px 16px rgba(27, 94, 58, 0.14);
+
+  /* banana-leaf veins: thin diagonal lines */
+  --veins: repeating-linear-gradient(115deg, transparent 0 34px, rgba(27, 94, 58, 0.08) 34px 36px);
+  --veins-light: repeating-linear-gradient(115deg, transparent 0 34px, rgba(255, 255, 255, 0.1) 34px 36px);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+
+body {
+  margin: 0;
+  font-family: "Nunito", "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  font-family: "Fredoka", "Segoe UI", Arial, sans-serif;
+  color: var(--green-dark);
+  margin: 0 0 10px;
+  line-height: 1.2;
+}
+h2 { text-align: center; font-size: 2.1rem; margin-bottom: 34px; }
+
+/* small banana-leaf shaped divider under each section title */
+h2::after {
+  content: "";
+  display: block;
+  width: 64px; height: 14px;
+  margin: 10px auto 0;
+  background: var(--green-mid);
+  border-radius: 14px 0 14px 0;
+  box-shadow: 22px 0 0 -2px var(--accent);
+  transform: translateX(-11px);
+}
+
+/* ===== Navigation (banana leaf green bar) ===== */
+.navbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 8px;
+  padding: 10px 24px;
+  background: var(--veins-light), var(--green-dark);
+  border-bottom: 4px solid var(--accent);
+}
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--white); text-decoration: none;
+  font-family: "Fredoka", sans-serif; font-weight: 700; font-size: 1.5rem; letter-spacing: 1.5px;
+}
+/* Pastilicious logo image (transparent PNG) */
+.logo-img { height: 76px; width: auto; flex-shrink: 0; display: block; }
+/* placeholder drawing (only shown if assets/logo.png is missing) */
+.logo-placeholder { width: 46px; height: 46px; }
+/* the real logo already shows the business name, so hide the extra text */
+.logo.has-logo .logo-text { display: none; }
+.nav-links { display: flex; flex-wrap: wrap; gap: 4px; }
+.nav-links a {
+  color: var(--white); text-decoration: none;
+  padding: 8px 14px; border-radius: 20px; font-weight: 600; font-size: 0.95rem;
+}
+.nav-links a:hover { background: var(--accent); color: var(--text); }
+
+/* ===== Hero (full-width leaf background) ===== */
+.hero {
+  display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 30px;
+  padding: 70px max(24px, calc((100% - 1100px) / 2));
+  background: var(--veins), linear-gradient(135deg, var(--green-light) 0%, #f2fbf4 60%, #fff4d6 100%);
+}
+.hero h1 { font-size: 3.6rem; letter-spacing: 2px; }
+.tagline { font-family: "Fredoka", sans-serif; font-size: 1.4rem; color: var(--accent-dark); font-weight: 600; }
+.hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+.hero-image { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.pastil-art { width: 100%; max-width: 380px; height: auto; filter: drop-shadow(0 10px 14px rgba(27, 94, 58, 0.3)); }
+.plate-label { font-family: "Fredoka", sans-serif; font-weight: 600; color: var(--green-dark); }
+
+/* ===== Promotional video ===== */
+.video-card {
+  max-width: 820px; background: var(--white); padding: 14px;
+  border-radius: 18px; border-top: 6px solid var(--green-mid); box-shadow: var(--shadow);
+}
+.video-card video {
+  display: block; width: 100%; aspect-ratio: 16 / 9;
+  background: #000; border-radius: 12px;
+}
+.video-placeholder {
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  aspect-ratio: 16 / 9; text-align: center; padding: 16px;
+  background: var(--green-light); color: var(--green-dark);
+  border: 3px dashed var(--green-mid); border-radius: 12px;
+}
+.video-placeholder p { margin: 4px 0; }
+.video-caption { text-align: center; margin: 14px 6px 4px; font-weight: 600; }
+
+/* ===== Sections & cards ===== */
+.section { padding: 64px 24px; }
+.section.alt { background: var(--veins), var(--green-light); }
+.section > * { max-width: 1100px; margin-left: auto; margin-right: auto; }
+
+.card {
+  background: var(--white); border-radius: 18px; padding: 24px;
+  box-shadow: var(--shadow);
+  border-top: 6px solid var(--green-mid);
+}
+.center { text-align: center; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+.check-list { list-style: none; padding: 0; margin: 0; }
+.check-list li { padding: 4px 0; }
+.check-list li::before { content: "🌿 "; }
+
+/* ===== Menu cards: look like a pastil packet tied with string ===== */
+.product {
+  display: flex; flex-direction: column; text-align: center;
+  border-top: 0; position: relative; overflow: hidden;
+  padding-top: 0;
+}
+.product::before {              /* leaf-wrap strip at the top */
+  content: ""; display: block; height: 14px; margin: 0 -24px 14px;
+  background: var(--veins-light), var(--green-dark);
+  border-bottom: 4px solid var(--accent);   /* the "string" */
+}
+.product-icon {
+  display: grid; place-items: center;
+  min-height: 232px;
+  background: radial-gradient(ellipse at 50% 45%, #fffdf5 0%, #f1f7eb 54%, #d9ebd8 100%);
+  border: 1px solid rgba(27, 94, 58, 0.12);
+  border-radius: 18px;
+  padding: 4px; margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -8px 18px rgba(27, 94, 58, 0.04);
+}
+.product-icon svg {
+  width: 100%; max-width: 420px; max-height: 280px; height: auto; display: block;
+  justify-self: center; align-self: center;
+  overflow: visible;
+  transform-origin: center;
+  filter: drop-shadow(0 8px 7px rgba(22, 66, 39, 0.2));
+  transition: transform 0.22s ease, filter 0.22s ease;
+}
+.product:hover .product-icon svg {
+  transform: scale(1.025);
+  filter: drop-shadow(0 11px 9px rgba(22, 66, 39, 0.23));
+}
+.product p { flex-grow: 1; margin: 0 0 12px; }
+.price {
+  display: inline-block; align-self: center; flex-grow: 0 !important;
+  background: var(--accent); color: var(--text);
+  font-family: "Fredoka", sans-serif; font-size: 1.5rem; font-weight: 700;
+  padding: 2px 18px; border-radius: 30px; margin-bottom: 14px !important;
+}
+
+.big-icon {
+  width: 68px; height: 68px; margin: 0 auto 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; background: var(--green-light); border-radius: 50%;
+  border: 3px solid var(--accent);
+}
+
+/* How it works: step number looks like a rice-plate badge */
+.step { position: relative; }
+.step-num {
+  display: inline-block; margin-bottom: 8px;
+  background: var(--green-dark); color: var(--white);
+  font-family: "Fredoka", sans-serif; font-weight: 700; font-size: 1.1rem;
+  padding: 2px 14px; border-radius: 20px;
+}
+
+/* ===== Forms & buttons ===== */
+label { display: block; font-weight: 700; margin: 12px 0 4px; color: var(--green-dark); }
+input, select, textarea {
+  width: 100%; padding: 10px 12px; font-size: 1rem; font-family: inherit;
+  border: 2px solid var(--green-light); border-radius: 10px; background: var(--rice);
+}
+input:focus, select:focus, textarea:focus, .btn:focus-visible {
+  outline: 3px solid var(--accent); border-color: var(--green-dark);
+}
+
+.btn {
+  padding: 12px 22px; font-size: 1rem; font-weight: 700; font-family: "Fredoka", sans-serif;
+  border: 2px solid transparent; border-radius: 30px; cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-primary { background: var(--green-dark); color: var(--white); }
+.btn-primary:hover { background: #14472b; }
+.btn-accent { background: var(--accent); color: var(--text); }
+.btn-accent:hover { background: #e08f0a; }
+.btn-outline { background: transparent; color: var(--green-dark); border-color: var(--green-dark); }
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+
+/* ===== Messages & output ===== */
+.message { margin: 12px 0 0; font-weight: 700; min-height: 1.4em; }
+.message.error { color: #b3261e; }
+.message.success { color: var(--green-dark); }
+.muted { color: #5f6b64; }
+.small { font-size: 0.85rem; }
+
+.output { margin-top: 12px; }
+.summary-box { background: var(--rice); border-left: 6px solid var(--green-mid); padding: 12px 16px; border-radius: 10px; }
+.summary-box p { margin: 2px 0; }
+.total { font-family: "Fredoka", sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--green-dark); }
+.confirm-box { background: #fff4d6; border-left: 6px solid var(--accent); padding: 12px 16px; border-radius: 10px; margin-top: 12px; }
+
+.calculator { margin-top: 24px; }
+.calc-row { display: grid; grid-template-columns: 2fr 1fr auto auto; gap: 12px; align-items: end; }
+
+.review { background: var(--rice); border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; border-left: 6px solid var(--accent); }
+.stars { color: var(--accent-dark); font-size: 1.2rem; }
+
+.contact-card { max-width: 520px; }
+.contact-card a { color: var(--green-dark); font-weight: 700; }
+
+/* ===== Footer (leaf green with veins) ===== */
+.footer {
+  background: var(--veins-light), var(--green-dark);
+  border-top: 4px solid var(--accent);
+  color: var(--white); text-align: center; padding: 34px 20px;
+}
+.footer h3 { color: var(--white); letter-spacing: 1.5px; }
+.footer p { margin: 4px 0; }
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .calc-row { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 700px) {
+  .navbar { justify-content: center; }
+  .logo { font-size: 1.25rem; }
+  .logo-img { height: 62px; }
+  .hero, .two-col, .grid-4, .calc-row { grid-template-columns: 1fr; }
+  .hero { text-align: center; padding: 40px 20px; }
+  .hero h1 { font-size: 2.6rem; }
+  .hero-buttons { justify-content: center; }
+  .btn { width: 100%; padding: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .btn { transition: none; }
+}

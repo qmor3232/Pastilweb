@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pastilicious | Simple. Flavorful. Satisfying.</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- PyScript (loads Python in the browser) -->
+  <link rel="stylesheet" href="https://pyscript.net/releases/2024.11.1/core.css">
+  <script type="module" src="https://pyscript.net/releases/2024.11.1/core.js"></script>
+</head>
+<body>
+
+  <!-- Reusable pastil drawing used by the menu cards -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="leaf-rim" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#155a36"/><stop offset="1" stop-color="#0b482b"/>
+      </linearGradient>
+      <linearGradient id="leaf-center" x1="0" y1="0" x2="0.9" y2="1">
+        <stop offset="0" stop-color="#55a96c"/><stop offset="1" stop-color="#287547"/>
+      </linearGradient>
+      <linearGradient id="rice-tone" x1="0" y1="0" x2="0.2" y2="1">
+        <stop offset="0" stop-color="#fffef8"/><stop offset="1" stop-color="#e8e0cb"/>
+      </linearGradient>
+      <linearGradient id="chicken-tone" x1="0" y1="0" x2="0.7" y2="1">
+        <stop offset="0" stop-color="#e8a24b"/><stop offset="0.52" stop-color="#bd6d27"/><stop offset="1" stop-color="#8b451d"/>
+      </linearGradient>
+      <linearGradient id="chicken-strand" x1="0" y1="0" x2="0.8" y2="1">
+        <stop offset="0" stop-color="#f7c477"/><stop offset=".42" stop-color="#d98937"/><stop offset="1" stop-color="#9a4b1d"/>
+      </linearGradient>
+      <linearGradient id="rice-grain-tone" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fffef9"/><stop offset="1" stop-color="#e9e0cb"/>
+      </linearGradient>
+      <radialGradient id="egg-yolk-tone" cx="35%" cy="28%">
+        <stop offset="0" stop-color="#ffe58a"/><stop offset=".58" stop-color="#f7b52c"/><stop offset="1" stop-color="#df8312"/>
+      </radialGradient>
+      <linearGradient id="chili-tone" x1="0" y1="0" x2="0.9" y2="1">
+        <stop offset="0" stop-color="#ff7353"/><stop offset="1" stop-color="#c92320"/>
+      </linearGradient>
+      <filter id="pastil-shadow" x="-20%" y="-20%" width="140%" height="150%">
+        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#173b27" flood-opacity=".28"/>
+      </filter>
+      <filter id="food-surface-grain" x="-12%" y="-12%" width="124%" height="124%">
+        <feTurbulence type="fractalNoise" baseFrequency=".16" numOctaves="3" seed="12" result="grain"/>
+        <feColorMatrix in="grain" type="saturate" values="0" result="monochrome-grain"/>
+        <feComponentTransfer in="monochrome-grain" result="soft-grain">
+          <feFuncA type="table" tableValues="0 .24"/>
+        </feComponentTransfer>
+        <feBlend in="SourceGraphic" in2="soft-grain" mode="soft-light"/>
+      </filter>
+      <filter id="hero-chicken-grain" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency=".82" numOctaves="3" seed="23" result="fine-noise"/>
+        <feColorMatrix in="fine-noise" type="saturate" values="0" result="fine-grey"/>
+        <feComponentTransfer in="fine-grey" result="fine-grain">
+          <feFuncA type="table" tableValues="0 .42"/>
+        </feComponentTransfer>
+        <feBlend in="SourceGraphic" in2="fine-grain" mode="soft-light"/>
+      </filter>
+      <radialGradient id="hero-chicken-light" cx="38%" cy="25%" r="78%">
+        <stop offset="0" stop-color="#ffd58d" stop-opacity=".3"/>
+        <stop offset=".58" stop-color="#d88939" stop-opacity=".08"/>
+        <stop offset="1" stop-color="#542815" stop-opacity=".24"/>
+      </radialGradient>
+      <linearGradient id="hero-chicken-shred" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#f6bd6b"/>
+        <stop offset=".36" stop-color="#d98639"/>
+        <stop offset=".72" stop-color="#aa5724"/>
+        <stop offset="1" stop-color="#743719"/>
+      </linearGradient>
+      <clipPath id="chicken-cluster-mask">
+        <path d="M49 72 C47 69 48 65 51 62 L50 59 Q51 56 56 57 C56 54 60 51 64 54 C67 50 72 50 76 53 C80 49 85 50 88 53 C92 50 96 50 99 54 C104 52 109 55 110 60 C115 62 116 66 113 70 L115 73 C114 77 111 80 106 80 L104 84 C100 86 96 85 93 84 C89 88 84 89 80 87 C76 90 71 89 68 86 C63 88 59 85 57 82 C53 83 50 79 51 76Z"/>
+      </clipPath>
+    </defs>
+    <symbol id="pastil-base" viewBox="0 0 160 120">
+      <path d="M10 73 C12 43 43 24 83 22 C120 20 149 39 151 68 C153 92 123 107 81 108 C40 109 9 96 10 73Z" fill="url(#leaf-rim)" filter="url(#pastil-shadow)"/>
+      <path d="M15 71 C17 46 46 29 83 27 C117 25 143 42 146 68 C148 88 121 100 82 102 C43 104 14 91 15 71Z" fill="url(#leaf-center)" stroke="#78bb7f" stroke-opacity=".48" stroke-width="1.5"/>
+      <path d="M20 71 C50 70 104 70 141 68" fill="none" stroke="#185f38" stroke-width="2.1" opacity=".66" stroke-linecap="round"/>
+      <g fill="none" stroke-linecap="round">
+        <path d="M25 48 Q49 60 71 69 M137 43 Q112 59 91 68 M27 90 Q49 80 70 73 M138 88 Q112 79 91 73" stroke="#a9d398" stroke-width="1.35" opacity=".48"/>
+        <path d="M40 38 Q55 52 72 67 M122 36 Q106 52 91 67 M40 96 Q56 84 72 75 M124 96 Q107 84 91 75" stroke="#c3e1aa" stroke-width=".8" opacity=".3"/>
+      </g>
+      <path d="M16 73 C18 92 41 103 70 105" fill="none" stroke="#a9d398" stroke-width="1.2" opacity=".55" stroke-linecap="round"/>
+      <path d="M146 68 C143 48 124 33 101 29" fill="none" stroke="#8bc683" stroke-width="1.1" opacity=".48" stroke-linecap="round"/>
+      <path d="M27 82 C25 65 40 49 65 45 C91 40 121 49 132 65 C142 81 126 95 98 100 C69 105 35 99 27 82Z" fill="url(#rice-tone)" stroke="#e0d8c6" stroke-width=".8" filter="url(#pastil-shadow)"/>
+      <path d="M31 77 C33 62 48 51 69 49 C92 46 116 53 127 66 C135 78 122 89 99 94 C72 99 41 92 31 77Z" fill="#fffdf7" opacity=".82"/>
+      <g fill="url(#rice-grain-tone)" stroke="#ded5c1" stroke-width=".42" opacity=".98">
+        <ellipse cx="34" cy="75" rx="3.8" ry="1.35" transform="rotate(-18 34 75)"/><ellipse cx="38" cy="84" rx="3.6" ry="1.2" transform="rotate(18 38 84)"/>
+        <ellipse cx="43" cy="90" rx="3.8" ry="1.28" transform="rotate(-9 43 90)"/><ellipse cx="47" cy="59" rx="3.3" ry="1.15" transform="rotate(22 47 59)"/>
+        <ellipse cx="50" cy="94" rx="3.5" ry="1.2" transform="rotate(10 50 94)"/><ellipse cx="56" cy="53" rx="3.2" ry="1.15" transform="rotate(-12 56 53)"/>
+        <ellipse cx="58" cy="96" rx="3.7" ry="1.25" transform="rotate(-17 58 96)"/><ellipse cx="66" cy="98" rx="3.5" ry="1.2" transform="rotate(16 66 98)"/>
+        <ellipse cx="74" cy="48" rx="3.2" ry="1.15" transform="rotate(13 74 48)"/><ellipse cx="78" cy="99" rx="3.8" ry="1.25" transform="rotate(-8 78 99)"/>
+        <ellipse cx="88" cy="98" rx="3.7" ry="1.2" transform="rotate(11 88 98)"/><ellipse cx="95" cy="48" rx="3.1" ry="1.15" transform="rotate(-17 95 48)"/>
+        <ellipse cx="100" cy="96" rx="3.6" ry="1.2" transform="rotate(-12 100 96)"/><ellipse cx="109" cy="91" rx="3.6" ry="1.22" transform="rotate(18 109 91)"/>
+        <ellipse cx="119" cy="84" rx="3.5" ry="1.2" transform="rotate(-17 119 84)"/><ellipse cx="127" cy="75" rx="3.4" ry="1.18" transform="rotate(14 127 75)"/>
+        <ellipse cx="124" cy="65" rx="3.3" ry="1.15" transform="rotate(-15 124 65)"/><ellipse cx="115" cy="56" rx="3.3" ry="1.18" transform="rotate(20 115 56)"/>
+        <ellipse cx="40" cy="66" rx="3.2" ry="1.1" transform="rotate(8 40 66)"/><ellipse cx="48" cy="79" rx="3.5" ry="1.2" transform="rotate(-22 48 79)"/>
+        <ellipse cx="113" cy="77" rx="3.5" ry="1.2" transform="rotate(9 113 77)"/><ellipse cx="103" cy="57" rx="3.3" ry="1.15" transform="rotate(-11 103 57)"/>
+      </g>
+      <g fill="none" stroke="#fff" stroke-width=".75" stroke-linecap="round" opacity=".75">
+        <path d="M32 74 l3 -1 M40 84 l3 1 M48 91 l3 -.5 M64 97 l3 .5 M82 98 l3 -1 M107 90 l3 -1 M119 83 l3 -1 M123 65 l3 .5"/>
+      </g>
+      <path d="M49 72 C47 69 48 65 51 62 L50 59 Q51 56 56 57 C56 54 60 51 64 54 C67 50 72 50 76 53 C80 49 85 50 88 53 C92 50 96 50 99 54 C104 52 109 55 110 60 C115 62 116 66 113 70 L115 73 C114 77 111 80 106 80 L104 84 C100 86 96 85 93 84 C89 88 84 89 80 87 C76 90 71 89 68 86 C63 88 59 85 57 82 C53 83 50 79 51 76Z" fill="url(#chicken-tone)" stroke="#87441d" stroke-width=".75" filter="url(#pastil-shadow)"/>
+      <g clip-path="url(#chicken-cluster-mask)">
+        <!-- Uneven roast tones sit beneath the fibers to give the chicken depth. -->
+        <path d="M46 63 C53 54 63 52 72 55 C79 58 80 62 74 66 C68 69 59 67 54 75 C50 79 47 73 46 63Z" fill="#a95620" opacity=".3"/>
+        <path d="M70 50 C79 47 87 51 91 57 C94 62 89 65 84 62 C79 59 76 56 69 58Z" fill="#f0b35f" opacity=".35"/>
+        <path d="M91 52 C100 49 108 54 114 62 C117 68 112 71 107 67 C103 63 98 62 91 63Z" fill="#9d4c1d" opacity=".29"/>
+        <path d="M54 75 C61 69 68 70 75 74 C80 78 77 83 70 84 C63 85 58 82 53 86Z" fill="#90451c" opacity=".34"/>
+        <path d="M75 69 C83 63 90 64 96 68 C101 72 98 77 92 79 C85 81 79 77 73 81Z" fill="#eda34c" opacity=".36"/>
+        <path d="M96 73 C102 68 109 69 114 74 C117 79 112 83 106 82 C101 81 98 79 93 80Z" fill="#874119" opacity=".3"/>
+        <path d="M61 56 C67 53 73 55 78 59 M83 58 C90 54 96 56 101 60 M103 64 C107 62 111 65 113 68 M52 69 C58 64 64 63 70 65 M70 72 C77 67 82 66 88 69 M88 73 C95 68 101 69 106 72 M61 81 C67 77 73 77 78 80 M81 84 C87 79 92 79 98 82" fill="none" stroke="#6f3518" stroke-width="1.2" stroke-linecap="round" opacity=".62"/>
+        <!-- Fine, varied ribbons suggest hand-pulled chicken rather than round chunks. -->
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M50 64 C55 60 60 59 66 60 C69 61 71 62 73 64" stroke="#ffd28e" stroke-width="1.35" opacity=".92"/>
+          <path d="M57 58 C62 55 67 55 72 58 C75 60 77 62 80 62" stroke="#e99a46" stroke-width="1.35" opacity=".95"/>
+          <path d="M70 54 C75 52 80 54 83 57 C85 59 87 60 90 60" stroke="#ffcf83" stroke-width="1.1" opacity=".9"/>
+          <path d="M81 54 C86 51 92 52 96 55 C99 57 101 59 105 59" stroke="#cf792f" stroke-width="1.45" opacity=".94"/>
+          <path d="M96 58 C101 56 106 59 109 63 C110 65 112 66 114 66" stroke="#f2b25d" stroke-width="1.2" opacity=".92"/>
+          <path d="M50 70 C55 67 59 66 64 67 C68 68 71 70 75 70" stroke="#f5b866" stroke-width="1.45" opacity=".96"/>
+          <path d="M54 75 C59 71 64 70 69 72 C73 73 75 75 79 75" stroke="#713719" stroke-width="1.05" opacity=".75"/>
+          <path d="M64 65 C69 62 74 62 78 65 C81 67 84 68 87 68" stroke="#ffd28e" stroke-width="1.15" opacity=".9"/>
+          <path d="M73 72 C78 68 83 67 88 69 C91 70 94 73 97 73" stroke="#bd6625" stroke-width="1.45" opacity=".98"/>
+          <path d="M82 63 C87 59 92 59 96 62 C99 64 102 66 106 65" stroke="#f8bf70" stroke-width="1.2" opacity=".92"/>
+          <path d="M91 69 C96 65 101 65 105 68 C108 70 110 72 114 72" stroke="#6e3418" stroke-width="1.05" opacity=".75"/>
+          <path d="M51 78 C56 74 61 74 65 76 C69 78 72 80 76 80" stroke="#e99943" stroke-width="1.3" opacity=".96"/>
+          <path d="M59 83 C64 79 68 79 73 81 C76 82 78 84 82 84" stroke="#ffd08a" stroke-width="1.05" opacity=".9"/>
+          <path d="M72 78 C77 74 82 74 86 76 C90 78 92 80 96 80" stroke="#874119" stroke-width="1.05" opacity=".8"/>
+          <path d="M83 84 C88 80 93 79 97 81 C101 83 104 84 108 82" stroke="#e89b47" stroke-width="1.4" opacity=".95"/>
+          <path d="M99 77 C103 74 108 74 112 77" stroke="#f6bd6e" stroke-width="1.05" opacity=".9"/>
+          <!-- Small crosswise fibers break up the long strands for a pulled texture. -->
+          <path d="M54 60 C55 63 54 65 52 67 M62 54 C64 57 63 60 60 62 M75 55 C74 58 75 60 78 62 M88 52 C87 55 88 57 91 59 M105 59 C103 61 104 64 107 66 M58 68 C60 70 59 73 56 75 M68 63 C66 66 68 68 71 69 M80 60 C78 63 79 65 82 67 M94 62 C92 65 94 67 97 68 M108 68 C106 70 108 72 111 74 M63 74 C61 77 63 79 66 81 M76 72 C74 75 75 77 78 79 M90 72 C88 75 90 77 93 79 M103 79 C101 81 102 83 105 84 M72 82 C70 84 72 86 75 87 M85 78 C83 81 85 83 88 84" fill="none" stroke="#f8c274" stroke-width=".62" stroke-linecap="round" opacity=".65"/>
+          <path d="M51 66 C54 67 56 66 58 64 M66 58 C69 59 71 58 73 56 M79 65 C82 66 84 65 86 63 M91 57 C94 58 96 57 98 55 M54 77 C57 78 59 77 61 75 M70 68 C73 69 75 68 77 66 M84 74 C87 75 89 74 91 72 M98 81 C101 82 103 81 105 79 M77 85 C80 86 82 85 84 83" fill="none" stroke="#7a3a1a" stroke-width=".52" stroke-linecap="round" opacity=".48"/>
+          <!-- Short dark marks add light searing without a heavy cartoon outline. -->
+          <path d="M58 61 Q62 59 65 60 M87 56 Q91 54 94 56 M55 72 Q58 70 61 70 M77 66 Q80 64 83 66 M102 75 Q105 73 108 74 M68 85 Q71 83 74 84" stroke="#713719" stroke-width=".9" opacity=".62"/>
+        </g>
+        <g fill="#713719" opacity=".36">
+          <ellipse cx="63" cy="57" rx=".7" ry=".42" transform="rotate(-18 63 57)"/><ellipse cx="76" cy="69" rx=".75" ry=".4" transform="rotate(22 76 69)"/>
+          <ellipse cx="94" cy="59" rx=".68" ry=".4" transform="rotate(-20 94 59)"/><ellipse cx="105" cy="76" rx=".8" ry=".43" transform="rotate(18 105 76)"/>
+          <ellipse cx="85" cy="82" rx=".7" ry=".4" transform="rotate(-8 85 82)"/><ellipse cx="71" cy="61" rx=".6" ry=".38"/>
+        </g>
+      </g>
+      <g fill="url(#rice-grain-tone)" stroke="#ded5c1" stroke-width=".38" opacity=".96">
+        <ellipse cx="45" cy="71" rx="3.1" ry="1.05" transform="rotate(-24 45 71)"/><ellipse cx="47" cy="84" rx="3.1" ry="1.05" transform="rotate(17 47 84)"/>
+        <ellipse cx="57" cy="91" rx="3" ry="1" transform="rotate(-12 57 91)"/><ellipse cx="71" cy="94" rx="3.2" ry="1" transform="rotate(12 71 94)"/>
+        <ellipse cx="96" cy="93" rx="3.2" ry="1" transform="rotate(-9 96 93)"/><ellipse cx="111" cy="87" rx="3" ry="1" transform="rotate(19 111 87)"/>
+        <ellipse cx="120" cy="75" rx="3" ry="1" transform="rotate(-16 120 75)"/><ellipse cx="108" cy="53" rx="3" ry="1" transform="rotate(16 108 53)"/>
+        <ellipse cx="63" cy="51" rx="3" ry="1" transform="rotate(-9 63 51)"/><ellipse cx="83" cy="49" rx="3" ry="1" transform="rotate(11 83 49)"/>
+      </g>
+    </symbol>
+  </svg>
+
+  <!-- 1. NAVIGATION BAR -->
+  <header class="navbar">
+    <a href="#home" class="logo">
+      <!-- LOGO: the Pastilicious logo is embedded here so it shows without any extra files.
+           (The same image is also saved as assets/logo.png, used for the browser tab icon.) -->
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAFACAMAAAD6TlWYAAAB/lBMVEXi1KPhslfj7uPas1qpo2UeHiHfnifYr1LgpjbjrUvcnBzfxXfb1ZCUaB5uURzg3tTgz3JrZ1WlpJWgjCTIvZv/fwCBfWvbu47gwnJ/AADjyYvmqSR///88QB0A//9CPUB+fIB+gR1+gkC/wW6/wLu2///Av8HhxIIAAAAsLCz8+u8xMS/noynjnSbXmCdzeSSEiSljahz//wBPRin/AABnaiTdoixxVieLaCpHOiZtcx21hizY19D69dSWlpF8gSdXV1Ps59JISEZTWCb6/v0dJCineitdZBt3d3O3t7Hjmxrr6uT05rJQVhxpaWUcGxonJR2ZdCuqqqWKiYXt1ZDltlHpxnHLy8TEiyralxzioitcYySMki7loR3DwrtKSBtkSyako5vv26l/fwDcpTHioy6DgnrapjX9965kYlrdoy3doizpyobjrEXmvGfinSXipTPw5ZWWl0Y3NR1JOR2nplPcnSfbtVPKxnTkx4o9QSjbqkXvsTLZq0vkuWogHhwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABvW7pmAAAAgHRSTlMdYBA0//+p/WST5ib///////////8C/xhMAlEkAv8B////////B/+VAP////79/v///wH/Af/9/////////////////wb///////v///////////////////7S///9//////8Cj6//c///r83////PkP//////zE7/J/9w/k4y/8sUMMQAAEA+SURBVHja7X2HXxrb1jbYYkw5Of3e+75fb457ZjCODCBFurQAAvZYY4kmppdzUv/1b/cyMyAolnMu+5eiKGWeWeVZa6+9lm9ysC60fAMIBgAOABwAOABwsAYADgAcADgAcLAGAA4AHAA4AHCwBgAOABwAOABwsAYADgAcADgAcLAGAA4AHAA4AHCwBgD+GwI4MzMzy9bMzADAntbszJNZ5yMzT2YGAHYleLOTs22BvXmy6LtZ2FHosr4///X/bsvL/+1P3xBHcQCg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" alt="Pastilicious logo" class="logo-img"
+           onload="this.parentElement.classList.add('has-logo')"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <svg class="logo-img logo-placeholder" viewBox="0 0 48 48" role="img" aria-label="Pastilicious placeholder logo" style="display:none">
+        <title>Placeholder logo (replace with assets/logo.png)</title>
+        <circle cx="24" cy="24" r="23" fill="#fff" stroke="#f4a21e" stroke-width="2"/>
+        <path d="M8 30 Q24 8 40 30 Q24 38 8 30Z" fill="#3a9560"/>
+        <path d="M14 30 Q24 18 34 30Z" fill="#b8681f"/>
+        <text x="24" y="42" text-anchor="middle" font-family="Arial" font-weight="700" font-size="9" fill="#1b5e3a">PASTIL</text>
+      </svg>
+      <span class="logo-text">PASTILICIOUS</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#home">Home</a>
+      <a href="#about">About</a>
+      <a href="#menu">Menu</a>
+      <a href="#order">Order</a>
+      <a href="#feedback">Feedback</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- 2. HERO -->
+    <section id="home" class="hero">
+      <div class="hero-text">
+        <h1>PASTILICIOUS</h1>
+        <p class="tagline">"Simple. Flavorful. Satisfying."</p>
+        <p>Enjoy delicious chicken pastil served with rice, prepared for anyone looking for a simple and satisfying meal.</p>
+        <div class="hero-buttons">
+          <button id="view-menu-btn" class="btn btn-primary">View Menu</button>
+          <button id="order-now-btn" class="btn btn-accent">Order Now</button>
+        </div>
+      </div>
+      <div class="hero-image" aria-hidden="true">
+        <!-- Pastil illustration: rice and shredded chicken on a banana leaf -->
+        <svg class="pastil-art" viewBox="0 0 340 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chicken pastil with rice served on a banana leaf">
+          <g fill="none" stroke="#9bcfae" stroke-width="5" stroke-linecap="round" opacity=".78">
+            <path d="M126 91 C112 72 121 59 130 47 C139 35 137 23 128 11"/>
+            <path d="M170 88 C156 69 164 53 173 39 C181 26 179 15 170 4"/>
+            <path d="M214 91 C200 72 209 59 218 47 C227 35 225 23 216 11"/>
+          </g>
+          <use href="#pastil-base" x="5" y="58" width="330" height="247.5"/>
+          <!-- Extra detail for the larger hero serving; menu thumbnails stay uncluttered. -->
+          <g transform="translate(5 58) scale(2.0625)" aria-hidden="true">
+            <!-- Very light natural grain over the large leaf and chicken surfaces. -->
+            <path d="M15 71 C17 46 46 29 83 27 C117 25 143 42 146 68 C148 88 121 100 82 102 C43 104 14 91 15 71Z" fill="#62a971" opacity=".17" filter="url(#food-surface-grain)"/>
+            <path d="M49 72 C47 69 48 65 51 62 L50 59 Q51 56 56 57 C56 54 60 51 64 54 C67 50 72 50 76 53 C80 49 85 50 88 53 C92 50 96 50 99 54 C104 52 109 55 110 60 C115 62 116 66 113 70 L115 73 C114 77 111 80 106 80 L104 84 C100 86 96 85 93 84 C89 88 84 89 80 87 C76 90 71 89 68 86 C63 88 59 85 57 82 C53 83 50 79 51 76Z" fill="#d18a43" opacity=".28" filter="url(#food-surface-grain)"/>
+            <path d="M49 72 C47 69 48 65 51 62 L50 59 Q51 56 56 57 C56 54 60 51 64 54 C67 50 72 50 76 53 C80 49 85 50 88 53 C92 50 96 50 99 54 C104 52 109 55 110 60 C115 62 116 66 113 70 L115 73 C114 77 111 80 106 80 L104 84 C100 86 96 85 93 84 C89 88 84 89 80 87 C76 90 71 89 68 86 C63 88 59 85 57 82 C53 83 50 79 51 76Z" fill="#c9833e" opacity=".4" filter="url(#hero-chicken-grain)"/>
+            <path d="M49 72 C47 69 48 65 51 62 L50 59 Q51 56 56 57 C56 54 60 51 64 54 C67 50 72 50 76 53 C80 49 85 50 88 53 C92 50 96 50 99 54 C104 52 109 55 110 60 C115 62 116 66 113 70 L115 73 C114 77 111 80 106 80 L104 84 C100 86 96 85 93 84 C89 88 84 89 80 87 C76 90 71 89 68 86 C63 88 59 85 57 82 C53 83 50 79 51 76Z" fill="url(#hero-chicken-light)" opacity=".8"/>
+            <!-- Larger tapered shreds give the chicken body and irregular roasted layers. -->
+            <g clip-path="url(#chicken-cluster-mask)" opacity=".86">
+              <path d="M50 67 C55 62 62 59 69 60 C66 62 64 64 61 66 C58 67 55 69 52 71Z" fill="url(#hero-chicken-shred)"/>
+              <path d="M64 61 C69 56 76 54 83 55 C79 57 76 60 72 62 C69 63 67 64 64 65Z" fill="#f0ae59" opacity=".82"/>
+              <path d="M80 62 C86 57 94 56 100 58 C96 60 92 63 88 64 C85 65 82 65 80 66Z" fill="url(#hero-chicken-shred)" opacity=".88"/>
+              <path d="M96 66 C101 62 107 62 113 65 C109 66 106 68 103 70 C100 71 98 70 96 71Z" fill="#e99b48" opacity=".78"/>
+              <path d="M52 75 C58 70 65 69 71 70 C67 72 64 75 60 77 C57 78 54 78 52 79Z" fill="#a44e20" opacity=".78"/>
+              <path d="M67 73 C73 68 80 67 87 68 C83 70 80 73 76 75 C73 76 70 76 67 77Z" fill="url(#hero-chicken-shred)"/>
+              <path d="M84 74 C90 69 97 68 104 70 C100 72 97 75 93 77 C90 78 87 77 84 78Z" fill="#f0a64f" opacity=".86"/>
+              <path d="M100 78 C105 74 110 73 114 75 C111 77 108 79 105 80 C103 81 101 80 100 81Z" fill="#9b4a1e" opacity=".78"/>
+              <path d="M53 67 C58 63 62 62 66 62 M68 60 C73 56 77 56 80 56 M84 62 C89 58 94 58 98 59 M70 73 C75 70 79 69 83 69 M88 75 C93 71 97 71 101 72" fill="none" stroke="#ffe0a0" stroke-width=".58" stroke-linecap="round" opacity=".74"/>
+              <path d="M54 72 Q59 68 64 68 M73 65 Q78 62 82 62 M92 68 Q97 65 102 66 M59 81 Q64 78 69 78 M81 82 Q86 79 91 79" fill="none" stroke="#76391a" stroke-width=".5" stroke-linecap="round" opacity=".45"/>
+            </g>
+            <g clip-path="url(#chicken-cluster-mask)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <!-- Soft shadow edges between overlapping pulled strands. -->
+              <path d="M51 63 C55 60 58 61 61 59 M58 70 C62 67 65 68 69 65 M52 77 C56 74 59 75 63 72 M64 82 C67 78 70 79 74 76 M72 60 C75 57 78 59 81 56 M80 69 C84 65 87 67 91 63 M87 79 C91 75 94 77 98 73 M98 67 C102 64 105 66 109 62 M101 82 C104 78 108 79 112 75" stroke="#713719" stroke-width=".78" opacity=".5"/>
+              <!-- Fine gold fibers catch the light at varied angles and lengths. -->
+              <path d="M50 67 C54 64 57 64 60 62 M55 59 C58 57 60 58 63 56 M60 74 C64 70 67 72 71 68 M55 80 C58 77 61 78 65 75 M63 57 C67 54 69 57 72 55 M67 63 C71 60 74 62 77 59 M69 76 C73 72 76 74 80 71 M76 54 C79 52 82 55 85 53 M78 64 C81 61 84 62 87 59 M82 74 C85 71 88 72 91 69 M86 56 C89 53 92 55 95 53 M89 65 C92 62 95 64 98 61 M94 76 C97 72 100 74 103 71 M98 57 C101 55 104 58 107 56 M102 69 C105 66 108 68 111 65 M107 77 C110 74 112 75 114 73 M62 84 C65 82 67 83 70 81 M80 83 C83 80 86 81 89 79 M94 84 C97 81 100 82 103 80" stroke="#ffd28e" stroke-width=".58" opacity=".72"/>
+              <path d="M52 69 C55 67 57 67 59 66 M61 66 C63 64 65 65 67 63 M74 57 C76 56 78 57 80 55 M84 61 C86 59 88 60 90 58 M93 71 C95 69 97 70 99 68 M103 60 C105 59 107 60 109 59 M57 82 C59 80 61 81 63 79 M73 84 C75 82 77 83 79 81 M87 71 C89 69 91 70 93 68 M106 84 C108 82 110 82 112 80" stroke="#f4b867" stroke-width=".42" opacity=".68"/>
+            </g>
+            <!-- Tiny browned flecks add surface detail without changing the clean menu icons. -->
+            <g fill="#713719" opacity=".48">
+              <ellipse cx="59" cy="60" rx=".72" ry=".42" transform="rotate(-28 59 60)"/><ellipse cx="68" cy="58" rx=".55" ry=".36" transform="rotate(18 68 58)"/>
+              <ellipse cx="78" cy="68" rx=".7" ry=".4" transform="rotate(-12 78 68)"/><ellipse cx="88" cy="54" rx=".65" ry=".38" transform="rotate(25 88 54)"/>
+              <ellipse cx="96" cy="71" rx=".78" ry=".42" transform="rotate(-22 96 71)"/><ellipse cx="107" cy="64" rx=".58" ry=".36" transform="rotate(14 107 64)"/>
+              <ellipse cx="65" cy="79" rx=".65" ry=".4" transform="rotate(12 65 79)"/><ellipse cx="83" cy="82" rx=".72" ry=".4" transform="rotate(-18 83 82)"/>
+              <ellipse cx="101" cy="79" rx=".68" ry=".4" transform="rotate(21 101 79)"/><ellipse cx="111" cy="70" rx=".62" ry=".38" transform="rotate(-9 111 70)"/>
+            </g>
+            <!-- More individual, uneven shreds give the large serving a layered surface. -->
+            <g clip-path="url(#chicken-cluster-mask)" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".42">
+              <path d="M50 72 C53 69 56 70 59 67 C61 66 63 66 65 64 M54 61 C57 59 59 60 61 58 M57 75 C60 72 63 73 66 70 C68 69 70 69 72 67 M60 84 C63 81 65 82 68 79 M65 59 C68 56 70 57 73 55 M65 74 C68 71 71 72 74 69 M70 64 C73 61 75 62 78 60 M71 86 C74 83 77 84 79 81 M75 57 C78 55 80 56 82 54 M77 68 C80 65 82 66 85 63 M80 77 C83 74 85 75 88 72 M84 86 C87 83 89 84 92 81 M86 58 C89 55 91 56 94 54 M89 68 C92 65 94 66 97 63 M92 77 C95 74 98 75 101 72 M97 58 C100 56 102 57 105 55 M101 66 C104 63 107 64 110 61 M104 84 C107 81 109 82 113 78 M108 73 C110 71 112 71 114 69" stroke="#8a461e" stroke-width=".62" opacity=".76"/>
+              <path d="M51 65 C54 63 57 64 60 61 M53 79 C56 76 59 77 62 74 M59 64 C62 61 64 62 67 59 M61 78 C64 75 66 76 69 73 M68 56 C71 53 73 54 76 52 M68 82 C71 79 74 80 77 77 M73 71 C76 68 79 69 82 66 M78 59 C81 56 83 57 86 54 M81 82 C84 79 87 80 90 77 M87 73 C90 70 93 71 96 68 M91 61 C94 58 97 59 100 56 M96 85 C99 82 102 83 105 80 M99 74 C102 71 104 72 107 69 M105 63 C108 60 110 61 113 59" stroke="#f6ba68" stroke-width=".48" opacity=".78"/>
+              <path d="M54 68 C57 66 59 67 61 65 M63 69 C66 66 68 67 70 65 M72 59 C74 57 76 58 78 56 M82 71 C84 69 87 69 89 67 M90 80 C92 78 95 78 97 76 M100 62 C102 60 104 61 106 59 M57 83 C59 81 61 82 63 80 M75 75 C77 73 79 73 81 71 M85 60 C87 58 89 59 91 57 M94 70 C96 68 98 69 100 67 M103 82 C105 80 107 80 109 78" stroke="#ffd995" stroke-width=".38" opacity=".8"/>
+            </g>
+            <!-- Tiny, irregular seared edges and seasoning specks. -->
+            <g fill="#693317" opacity=".54">
+              <path d="M56 62 l1.1 -.6 .8 .5 -.5 .8 -1.2 .2Z M70 60 l.9 -.5 .7 .3 -.4 .7 -1 .1Z M83 55 l.8 -.5 .8 .4 -.3 .6 -1 .1Z M99 60 l1 -.5 .8 .5 -.4 .6 -1 .1Z M108 68 l1 -.4 .6 .5 -.4 .6 -.9 .1Z"/>
+              <path d="M58 78 l.9 -.5 .8 .4 -.3 .7 -1.1 .2Z M74 80 l1 -.6 .7 .4 -.3 .7 -1.1 .1Z M88 75 l.9 -.5 .7 .4 -.4 .7 -1 .1Z M97 84 l1 -.5 .7 .4 -.4 .6 -1 .1Z M111 75 l.8 -.4 .7 .4 -.3 .6 -.9 .1Z"/>
+            </g>
+            <g fill="#fff8e8" opacity=".76">
+              <ellipse cx="61" cy="58" rx="1.25" ry=".42" transform="rotate(-24 61 58)"/><ellipse cx="74" cy="62" rx="1.35" ry=".4" transform="rotate(12 74 62)"/>
+              <ellipse cx="91" cy="58" rx="1.2" ry=".38" transform="rotate(-18 91 58)"/><ellipse cx="104" cy="72" rx="1.3" ry=".4" transform="rotate(18 104 72)"/>
+              <ellipse cx="76" cy="81" rx="1.2" ry=".38" transform="rotate(-9 76 81)"/><ellipse cx="95" cy="82" rx="1.25" ry=".4" transform="rotate(22 95 82)"/>
+            </g>
+            <!-- Tapered, overlapping shreds add real thickness and direction to the chicken. -->
+            <g clip-path="url(#chicken-cluster-mask)" opacity=".9">
+              <path d="M50 68 C53 65 57 63 61 62 C58 65 55 68 52 70Z" fill="#e49a49" opacity=".62"/>
+              <path d="M58 58 C61 55 65 54 69 55 C66 56 64 59 61 61Z" fill="#f0b05b" opacity=".76"/>
+              <path d="M67 60 C71 57 75 56 78 57 C75 59 72 61 69 64Z" fill="#a95620" opacity=".56"/>
+              <path d="M75 53 C78 51 82 51 85 54 C82 54 80 56 78 58Z" fill="#f4b965" opacity=".72"/>
+              <path d="M82 61 C86 58 91 57 95 58 C91 60 88 62 85 65Z" fill="#d27a32" opacity=".68"/>
+              <path d="M94 54 C98 52 102 54 105 57 C101 56 98 58 95 60Z" fill="#9f4f1e" opacity=".58"/>
+              <path d="M100 62 C104 60 108 61 112 64 C108 63 105 65 102 67Z" fill="#efad59" opacity=".72"/>
+              <path d="M51 76 C54 73 59 71 62 72 C59 74 56 77 53 79Z" fill="#98491d" opacity=".55"/>
+              <path d="M62 71 C66 68 70 67 74 69 C70 70 68 73 64 75Z" fill="#eaa04c" opacity=".7"/>
+              <path d="M73 65 C77 62 82 61 85 63 C82 65 78 68 75 70Z" fill="#ad5721" opacity=".6"/>
+              <path d="M85 72 C89 69 93 68 97 70 C93 72 90 74 87 77Z" fill="#f0ad58" opacity=".7"/>
+              <path d="M97 75 C101 72 106 72 109 75 C105 76 102 78 99 80Z" fill="#a14e1e" opacity=".59"/>
+              <path d="M58 82 C61 79 65 78 69 79 C66 81 63 84 60 85Z" fill="#e49443" opacity=".7"/>
+              <path d="M70 82 C74 79 78 78 82 80 C78 82 75 84 72 86Z" fill="#9b4a1c" opacity=".55"/>
+              <path d="M84 81 C88 78 92 78 96 80 C92 82 89 85 86 86Z" fill="#e9a04b" opacity=".7"/>
+              <path d="M96 84 C100 81 104 80 108 82 C104 84 101 86 98 87Z" fill="#bd6726" opacity=".65"/>
+            </g>
+            <!-- More individual grains sit naturally in the exposed rice around the filling. -->
+            <g fill="url(#rice-grain-tone)" stroke="#d8ceb8" stroke-width=".28" opacity=".94">
+              <ellipse cx="48" cy="62" rx="2.1" ry=".78" transform="rotate(-24 48 62)"/><ellipse cx="46" cy="68" rx="2.2" ry=".82" transform="rotate(16 46 68)"/>
+              <ellipse cx="48" cy="78" rx="2" ry=".75" transform="rotate(-12 48 78)"/><ellipse cx="52" cy="87" rx="2.1" ry=".78" transform="rotate(24 52 87)"/>
+              <ellipse cx="60" cy="50" rx="2" ry=".75" transform="rotate(10 60 50)"/><ellipse cx="69" cy="48" rx="2.2" ry=".78" transform="rotate(-18 69 48)"/>
+              <ellipse cx="105" cy="50" rx="2.1" ry=".76" transform="rotate(20 105 50)"/><ellipse cx="113" cy="55" rx="2.2" ry=".8" transform="rotate(-12 113 55)"/>
+              <ellipse cx="117" cy="62" rx="2" ry=".72" transform="rotate(18 117 62)"/><ellipse cx="119" cy="70" rx="2.2" ry=".82" transform="rotate(-20 119 70)"/>
+              <ellipse cx="117" cy="81" rx="2.1" ry=".76" transform="rotate(12 117 81)"/><ellipse cx="108" cy="89" rx="2.3" ry=".82" transform="rotate(-16 108 89)"/>
+            </g>
+            <g fill="none" stroke="#fff" stroke-width=".38" stroke-linecap="round" opacity=".82">
+              <path d="M46 68 l1.5 -.3 M51 87 l1.4 .2 M60 50 l1.5 .2 M69 48 l1.6 -.2 M105 50 l1.5 .2 M113 55 l1.4 -.2 M119 70 l1.5 -.2 M117 81 l1.4 .2 M108 89 l1.5 -.2"/>
+            </g>
+            <!-- A few extra loose rice grains and tiny highlights break up the smooth rice bed. -->
+            <g fill="url(#rice-grain-tone)" stroke="#d4c9b1" stroke-width=".3" opacity=".97">
+              <ellipse cx="38" cy="72" rx="2.35" ry=".84" transform="rotate(-12 38 72)"/>
+              <ellipse cx="43" cy="86" rx="2.2" ry=".8" transform="rotate(20 43 86)"/>
+              <ellipse cx="55" cy="93" rx="2.35" ry=".82" transform="rotate(-17 55 93)"/>
+              <ellipse cx="65" cy="95" rx="2.2" ry=".78" transform="rotate(13 65 95)"/>
+              <ellipse cx="77" cy="96" rx="2.45" ry=".84" transform="rotate(-8 77 96)"/>
+              <ellipse cx="91" cy="95" rx="2.2" ry=".78" transform="rotate(18 91 95)"/>
+              <ellipse cx="101" cy="93" rx="2.35" ry=".82" transform="rotate(-14 101 93)"/>
+              <ellipse cx="120" cy="75" rx="2.1" ry=".76" transform="rotate(16 120 75)"/>
+              <ellipse cx="111" cy="86" rx="2.25" ry=".8" transform="rotate(12 111 86)"/>
+            </g>
+            <g fill="none" stroke="#fffdf4" stroke-width=".35" stroke-linecap="round" opacity=".78">
+              <path d="M37 72 l1.4 -.25 M43 86 l1.35 .2 M55 93 l1.45 -.22 M65 95 l1.4 .18 M77 96 l1.5 -.2 M91 95 l1.4 .18 M101 93 l1.45 -.2 M120 75 l1.3 .15 M111 86 l1.35 -.2"/>
+            </g>
+            <!-- Fine secondary banana-leaf veins show around the rim. -->
+            <g fill="none" stroke-linecap="round" opacity=".34">
+              <path d="M18 59 Q29 62 40 67 M19 82 Q30 79 40 76 M33 43 Q42 49 50 58 M28 92 Q39 86 48 80" stroke="#c5dfa9" stroke-width=".65"/>
+              <path d="M142 57 Q132 61 122 66 M143 81 Q132 78 122 75 M129 39 Q121 46 114 54 M136 92 Q127 86 119 81" stroke="#d0e5b7" stroke-width=".65"/>
+              <path d="M25 65 Q32 66 38 70 M24 76 Q31 75 38 73 M135 65 Q129 67 123 70 M136 76 Q129 75 123 73" stroke="#86bd82" stroke-width=".45" opacity=".8"/>
+            </g>
+            <!-- Crispy garlic, scallion rings, and a light braising sheen finish the hero serving. -->
+            <g clip-path="url(#chicken-cluster-mask)">
+              <path d="M56 65 Q58 62 60 64 Q62 66 59 68Z" fill="#f5d58b" stroke="#bd782f" stroke-width=".28"/>
+              <path d="M70 56 Q72 53 74 55 Q76 57 73 59Z" fill="#f7e1aa" stroke="#c18438" stroke-width=".25"/>
+              <path d="M86 61 Q88 58 90 60 Q92 62 89 64Z" fill="#e7b966" stroke="#a96227" stroke-width=".28"/>
+              <path d="M100 70 Q102 67 104 69 Q106 71 103 73Z" fill="#fff0c2" stroke="#b76c28" stroke-width=".25"/>
+              <path d="M67 77 Q69 74 71 76 Q73 78 70 80Z" fill="#f3d38d" stroke="#a95f25" stroke-width=".28"/>
+              <path d="M91 80 Q93 77 95 79 Q97 81 94 83Z" fill="#f9e0a5" stroke="#b9752c" stroke-width=".25"/>
+              <path d="M106 62 Q108 60 110 62 Q111 64 108 65Z" fill="#efca7b" stroke="#a85d24" stroke-width=".25"/>
+              <!-- Soft caramelized onion ribbons tucked between the chicken shreds. -->
+              <path d="M59 69 C62 66 65 66 68 64 C66 67 63 70 60 71Z" fill="#f3d79b" opacity=".9"/>
+              <path d="M73 61 C76 58 79 58 82 56 C80 59 77 62 74 63Z" fill="#e8c47c" opacity=".88"/>
+              <path d="M89 68 C92 65 95 65 98 63 C96 66 93 69 90 70Z" fill="#f5dfa8" opacity=".9"/>
+              <path d="M75 77 C78 74 81 74 84 72 C82 75 79 78 76 79Z" fill="#edce8b" opacity=".86"/>
+              <path d="M100 75 C103 72 106 72 109 70 C107 73 104 76 101 77Z" fill="#f3d89f" opacity=".88"/>
+              <path d="M63 82 C66 79 69 79 72 77 C70 80 67 83 64 84Z" fill="#e7c27a" opacity=".86"/>
+              <g fill="#326b3c" stroke="#244f30" stroke-width=".3">
+                <ellipse cx="63" cy="72" rx="1.55" ry="1.08" transform="rotate(-22 63 72)"/>
+                <ellipse cx="79" cy="58" rx="1.45" ry="1.08" transform="rotate(14 79 58)"/>
+                <ellipse cx="84" cy="73" rx="1.55" ry="1.08" transform="rotate(-12 84 73)"/>
+                <ellipse cx="98" cy="63" rx="1.5" ry="1.05" transform="rotate(20 98 63)"/>
+                <ellipse cx="102" cy="79" rx="1.5" ry="1.05" transform="rotate(-18 102 79)"/>
+                <ellipse cx="74" cy="84" rx="1.4" ry="1" transform="rotate(12 74 84)"/>
+              </g>
+              <g fill="#b8d982">
+                <ellipse cx="63" cy="72" rx=".68" ry=".48" transform="rotate(-22 63 72)"/>
+                <ellipse cx="79" cy="58" rx=".62" ry=".48" transform="rotate(14 79 58)"/>
+                <ellipse cx="84" cy="73" rx=".68" ry=".48" transform="rotate(-12 84 73)"/>
+                <ellipse cx="98" cy="63" rx=".65" ry=".46" transform="rotate(20 98 63)"/>
+                <ellipse cx="102" cy="79" rx=".66" ry=".45" transform="rotate(-18 102 79)"/>
+                <ellipse cx="74" cy="84" rx=".6" ry=".42" transform="rotate(12 74 84)"/>
+              </g>
+              <g fill="none" stroke="#ffe2a7" stroke-linecap="round" opacity=".34">
+                <path d="M53 70 C63 66 71 68 78 65 M82 75 C90 71 98 72 107 68 M64 82 C73 78 81 80 88 77" stroke-width=".7"/>
+              </g>
+            </g>
+            <!-- Extra real-food cues: crisp shallots, fresh red chili, and pepper. -->
+            <g clip-path="url(#chicken-cluster-mask)">
+              <path d="M55 73 C59 70 62 69 66 69 C63 71 60 73 57 75Z" fill="#e5a24d" stroke="#9a5522" stroke-width=".22"/>
+              <path d="M78 59 C81 56 84 55 87 56 C84 58 82 60 79 61Z" fill="#f1bd70" stroke="#a76329" stroke-width=".22"/>
+              <path d="M94 76 C97 73 100 72 103 73 C100 75 98 77 95 78Z" fill="#d58a3c" stroke="#8c481e" stroke-width=".22"/>
+              <path d="M67 83 C70 80 73 79 76 80 C73 82 71 84 68 85Z" fill="#efb661" stroke="#9d5623" stroke-width=".22"/>
+              <g fill="#b73525" stroke="#79291e" stroke-width=".38">
+                <ellipse cx="61" cy="66" rx="1.55" ry="1.1" transform="rotate(-24 61 66)"/>
+                <ellipse cx="90" cy="59" rx="1.45" ry="1.05" transform="rotate(18 90 59)"/>
+                <ellipse cx="106" cy="73" rx="1.5" ry="1.08" transform="rotate(-16 106 73)"/>
+              </g>
+              <g fill="#f6dba7">
+                <ellipse cx="61" cy="66" rx=".55" ry=".27" transform="rotate(-24 61 66)"/>
+                <ellipse cx="90" cy="59" rx=".48" ry=".25" transform="rotate(18 90 59)"/>
+                <ellipse cx="106" cy="73" rx=".52" ry=".26" transform="rotate(-16 106 73)"/>
+              </g>
+              <g fill="#49301f" opacity=".72">
+                <circle cx="57" cy="61" r=".38"/><circle cx="72" cy="68" r=".34"/><circle cx="83" cy="55" r=".32"/>
+                <circle cx="98" cy="65" r=".4"/><circle cx="111" cy="69" r=".32"/><circle cx="77" cy="82" r=".36"/>
+                <circle cx="92" cy="84" r=".32"/><circle cx="65" cy="78" r=".3"/>
+              </g>
+              <path d="M57 72 Q61 69 64 70 M80 61 Q84 58 87 58 M97 77 Q101 74 104 75" fill="none" stroke="#ffe1a5" stroke-width=".42" stroke-linecap="round" opacity=".72"/>
+            </g>
+            <!-- More scattered toppings and fine browned texture on the shredded chicken. -->
+            <g clip-path="url(#chicken-cluster-mask)">
+              <!-- Fried garlic and shallot chips: irregular edges, toasted centers, light catching on one side. -->
+              <path d="M54 69 Q55 66 57 66 L60 67 Q61 68 59 70 L56 71Z" fill="#f4d38e" stroke="#a8662a" stroke-width=".3"/>
+              <path d="M73 55 Q75 53 77 54 L79 56 Q78 58 75 58 L73 57Z" fill="#f8e1ad" stroke="#a9682a" stroke-width=".28"/>
+              <path d="M87 71 Q89 68 91 69 L94 70 Q94 72 91 73 L88 73Z" fill="#e9b75f" stroke="#995320" stroke-width=".3"/>
+              <path d="M103 59 Q105 57 107 59 L109 61 Q108 63 105 63 L103 61Z" fill="#f4d792" stroke="#a65e26" stroke-width=".3"/>
+              <path d="M78 82 Q80 79 82 80 L84 82 Q83 84 80 85 L78 84Z" fill="#f7dfa4" stroke="#995320" stroke-width=".28"/>
+              <path d="M56 69 Q57 67.2 58.5 67.6 M75 55 Q76.4 54.2 77.6 55.2 M89 70 Q90.5 69.3 92 70.2 M105 59 Q106.3 58.5 107.4 59.7 M80 82 Q81.4 81 82.6 82" fill="none" stroke="#fff1c7" stroke-width=".34" stroke-linecap="round" opacity=".9"/>
+              <!-- Fresh chopped scallion and a few brighter chili pieces. -->
+              <g fill="#28633b" stroke="#194d30" stroke-width=".3">
+                <ellipse cx="69" cy="70" rx="1.65" ry="1.05" transform="rotate(24 69 70)"/>
+                <ellipse cx="94" cy="82" rx="1.6" ry="1.02" transform="rotate(-18 94 82)"/>
+                <ellipse cx="109" cy="67" rx="1.55" ry="1" transform="rotate(30 109 67)"/>
+                <ellipse cx="58" cy="79" rx="1.5" ry=".98" transform="rotate(-12 58 79)"/>
+              </g>
+              <g fill="#b8d982">
+                <ellipse cx="69" cy="70" rx=".72" ry=".43" transform="rotate(24 69 70)"/>
+                <ellipse cx="94" cy="82" rx=".7" ry=".42" transform="rotate(-18 94 82)"/>
+                <ellipse cx="109" cy="67" rx=".68" ry=".4" transform="rotate(30 109 67)"/>
+                <ellipse cx="58" cy="79" rx=".65" ry=".4" transform="rotate(-12 58 79)"/>
+              </g>
+              <path d="M69 70 Q70 69.5 70.3 70 M94 82 Q95 81.5 95.2 82 M109 67 Q110 66.5 110.3 67" fill="none" stroke="#edf5c4" stroke-width=".3" stroke-linecap="round"/>
+              <path d="M74 66 C76 64 77 63 79 62 M99 71 C102 69 103 68 105 66 M64 76 C66 75 67 74 69 73" fill="none" stroke="#c63b27" stroke-width="1.05" stroke-linecap="round"/>
+              <path d="M74.4 65.6 C76.3 64 77.4 63 79 62.3 M99.4 70.6 C101.5 69 103 68 104.7 66.4" fill="none" stroke="#ff9b68" stroke-width=".32" stroke-linecap="round" opacity=".9"/>
+              <!-- Uneven amber sear spots and tiny pepper flecks add fine surface texture. -->
+              <g fill="#783b1d" opacity=".5">
+                <path d="M54 63 l.7 -.35 .55 .3 -.2 .52 -.75 .12Z M63 61 l.55 -.28 .6 .32 -.25 .46 -.68 .05Z M75 65 l.72 -.3 .5 .38 -.3 .45 -.72 .06Z M85 57 l.6 -.34 .63 .34 -.22 .48 -.72 .06Z"/>
+                <path d="M96 61 l.75 -.34 .54 .4 -.27 .46 -.7 .04Z M109 64 l.6 -.27 .58 .28 -.22 .46 -.72 .08Z M61 74 l.7 -.3 .57 .35 -.25 .48 -.7 .06Z M72 80 l.65 -.32 .58 .35 -.25 .48 -.68 .04Z"/>
+                <path d="M87 77 l.72 -.32 .56 .35 -.28 .47 -.68 .06Z M101 80 l.62 -.31 .64 .36 -.24 .47 -.7 .04Z M111 75 l.58 -.26 .6 .29 -.23 .43 -.67 .06Z"/>
+              </g>
+              <g fill="#513723" opacity=".62">
+                <circle cx="56" cy="57" r=".25"/><circle cx="68" cy="62" r=".22"/><circle cx="81" cy="65" r=".24"/>
+                <circle cx="92" cy="56" r=".23"/><circle cx="104" cy="69" r=".24"/><circle cx="58" cy="84" r=".22"/>
+                <circle cx="77" cy="74" r=".26"/><circle cx="90" cy="86" r=".23"/><circle cx="105" cy="83" r=".25"/>
+              </g>
+              <!-- Thin irregular oil highlights make the warm braising glaze catch the light. -->
+              <path d="M57 64 C60 62 62 62 64 63 M83 68 C86 66 89 66 91 67 M98 73 C101 71 103 71 105 72 M69 85 Q72 83 74 84 M101 57 Q103 56 105 57" fill="none" stroke="#ffd68e" stroke-width=".52" stroke-linecap="round" opacity=".66"/>
+              <!-- Long, uneven chicken fibers and translucent sauce gloss. -->
+              <path d="M52 66 C56 63 59 62 63 61 C61 64 58 66 55 68Z" fill="#f0ae5a" opacity=".52"/>
+              <path d="M62 70 C66 66 70 65 75 64 C72 67 69 70 65 72Z" fill="#9d4d20" opacity=".4"/>
+              <path d="M77 57 C81 54 85 53 89 54 C86 56 83 59 79 60Z" fill="#ffc875" opacity=".48"/>
+              <path d="M91 64 C95 61 99 60 103 61 C100 63 97 66 93 67Z" fill="#8c441c" opacity=".38"/>
+              <path d="M84 78 C88 74 92 73 96 74 C93 77 90 80 86 81Z" fill="#f4b35c" opacity=".46"/>
+              <path d="M104 77 C107 74 110 73 113 74 C111 76 108 78 105 79Z" fill="#e79a43" opacity=".48"/>
+              <path d="M53 72 C59 68 64 68 70 69 M75 63 C82 59 87 59 93 60 M92 71 C98 67 103 67 109 69 M62 80 C68 76 73 77 79 78 M80 84 C87 80 92 81 98 82" fill="none" stroke="#6f3518" stroke-width=".42" stroke-linecap="round" opacity=".48"/>
+              <path d="M54 70 C60 66 64 66 69 67 M77 61 C83 57 88 57 93 58 M94 69 C100 65 105 66 110 68 M64 78 C69 74 74 74 79 76 M84 82 C89 78 94 79 99 80" fill="none" stroke="#ffe0a2" stroke-width=".36" stroke-linecap="round" opacity=".63"/>
+              <path d="M59 66 Q63 64 66 65 M71 74 Q75 71 78 72 M88 63 Q92 61 95 62 M101 77 Q104 75 107 76" fill="none" stroke="#fff0c8" stroke-width=".62" stroke-linecap="round" opacity=".34"/>
+            </g>
+            <!-- A fresh calamansi wedge adds a bright, believable Filipino condiment garnish. -->
+            <g>
+              <path d="M39.2 60.1 Q42.3 56.6 47.8 58.5 Q47 62.3 42.7 64.2 Q39.6 63.5 39.2 60.1Z" fill="#4c8b49" stroke="#2e6338" stroke-width=".48"/>
+              <path d="M40.1 60 Q42.9 57.7 46.8 59 Q46.1 61.5 42.8 63.1 Q40.5 62.6 40.1 60Z" fill="#f3edbf" stroke="#d8d0a0" stroke-width=".28"/>
+              <path d="M40.7 60.1 Q43.1 60.2 46.4 59.4 M42.8 62.9 Q43.1 61.7 43.2 59.9 M42.8 62.9 Q44.7 61.3 45.5 59.2" fill="none" stroke="#d5d29b" stroke-width=".28" stroke-linecap="round"/>
+              <path d="M40.2 59.7 Q42.8 57.9 45.2 58.6" fill="none" stroke="#d7f19d" stroke-width=".42" stroke-linecap="round" opacity=".9"/>
+            </g>
+            <!-- A tiny glossy chili condiment sits beside the rice. -->
+            <g>
+              <path d="M35.4 82.2 C36.2 79.7 39 78.4 42 79.1 C44.1 79.6 45.4 81.1 44.6 82.9 C43.8 84.8 40.4 85.5 37.5 84.7 C35.8 84.2 35 83.3 35.4 82.2Z" fill="#bd3927" stroke="#8a3022" stroke-width=".48"/>
+              <path d="M37.2 81.1 Q39.4 79.6 41.3 80.3" fill="none" stroke="#ffb078" stroke-width=".62" stroke-linecap="round" opacity=".9"/>
+              <g fill="#f4d79d"><ellipse cx="40.3" cy="82.2" rx=".42" ry=".2" transform="rotate(-18 40.3 82.2)"/><ellipse cx="42.2" cy="82.8" rx=".36" ry=".18" transform="rotate(20 42.2 82.8)"/></g>
+            </g>
+            <!-- Fresh cucumber rounds add a small, believable side garnish. -->
+            <g>
+              <g transform="rotate(-18 121 77)">
+                <ellipse cx="121" cy="77" rx="3.25" ry="2.55" fill="#3e783d" stroke="#285a32" stroke-width=".45"/>
+                <ellipse cx="121" cy="77" rx="2.72" ry="2.08" fill="#c8dfa0"/>
+                <ellipse cx="121" cy="77" rx="1.55" ry="1.28" fill="#e5edbd" opacity=".94"/>
+                <g fill="#f7f4dc" opacity=".92">
+                  <ellipse cx="120.1" cy="76.55" rx=".35" ry=".2"/><ellipse cx="121.55" cy="76.45" rx=".32" ry=".21"/>
+                  <ellipse cx="120.55" cy="77.55" rx=".32" ry=".2"/><ellipse cx="121.8" cy="77.55" rx=".35" ry=".2"/>
+                </g>
+                <path d="M119.4 75.5 Q120.3 74.8 121.3 75" fill="none" stroke="#f4f7dc" stroke-width=".3" stroke-linecap="round" opacity=".8"/>
+              </g>
+              <g transform="rotate(14 126 82)">
+                <ellipse cx="126" cy="82" rx="3.15" ry="2.45" fill="#3e783d" stroke="#285a32" stroke-width=".45"/>
+                <ellipse cx="126" cy="82" rx="2.62" ry="1.98" fill="#c8dfa0"/>
+                <ellipse cx="126" cy="82" rx="1.48" ry="1.2" fill="#e5edbd" opacity=".94"/>
+                <g fill="#f7f4dc" opacity=".92">
+                  <ellipse cx="125.2" cy="81.55" rx=".32" ry=".2"/><ellipse cx="126.6" cy="81.45" rx=".33" ry=".2"/>
+                  <ellipse cx="125.45" cy="82.5" rx=".34" ry=".2"/><ellipse cx="126.75" cy="82.45" rx=".32" ry=".2"/>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+        <span class="plate-label">Our signature chicken pastil</span>
+      </div>
+    </section>
+
+
+    <!-- 2B. PROMOTIONAL VIDEO (about 30 seconds) -->
+    <section id="video" class="section">
+      <h2>Watch Our 30-Second Advertisement</h2>
+      <div class="video-card">
+        <!-- The video file is stored beside index.html. -->
+        <video id="ad-video" controls preload="metadata" playsinline>
+          <source src="pastilicious-ad.mp4" type="video/mp4"
+                  onerror="document.getElementById('ad-video').style.display='none'; document.getElementById('video-placeholder').style.display='flex';">
+          Your browser does not support the video tag.
+        </video>
+        <!-- Shown only when the video file is missing -->
+        <div id="video-placeholder" class="video-placeholder">
+          <p><strong>Advertisement video coming soon</strong></p>
+          <p class="small">Place the file beside <code>index.html</code> as <code>pastilicious-ad.mp4</code></p>
+        </div>
+        <p class="video-caption">Meet Pastilicious: flavorful chicken pastil served with rice, from our Regular Chicken Pastil to our Extra Chicken Pastil.</p>
+      </div>
+    </section>
+
+    <!-- 3. ABOUT -->
+    <section id="about" class="section">
+      <h2>About Pastilicious</h2>
+      <div class="two-col">
+        <div class="card">
+          <h3>Who We Are</h3>
+          <p>Pastilicious is a food business focused on serving flavorful chicken pastil with rice. We aim to provide a simple and satisfying meal that customers can enjoy anytime.</p>
+        </div>
+        <div class="card">
+          <h3>What We Offer</h3>
+          <ul class="check-list">
+            <li>Chicken pastil</li>
+            <li>Rice meals</li>
+            <li>Flavorful food</li>
+            <li>Simple ordering experience</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. MENU -->
+    <section id="menu" class="section alt">
+      <h2>Our Menu</h2>
+      <div class="grid-4">
+        <article class="card product">
+          <div class="product-icon"><svg viewBox="0 0 160 120" aria-hidden="true"><use href="#pastil-base"/></svg></div>
+          <h3>Regular Chicken Pastil</h3>
+          <p>Classic shredded chicken pastil served with rice.</p>
+          <p class="price">₱35</p>
+          <button class="btn btn-primary add-btn" data-product="Regular Chicken Pastil">Add to Order</button>
+        </article>
+        <article class="card product">
+          <div class="product-icon"><svg viewBox="0 0 160 120" aria-hidden="true"><use href="#pastil-base"/><path d="M112 66 C120 58 134 59 143 68 C134 67 127 71 119 79 C114 77 111 72 112 66Z" fill="url(#chili-tone)" stroke="#b32820" stroke-width="1.1" filter="url(#pastil-shadow)"/><path d="M115 66 Q109 59 114 53 Q117 59 121 60" fill="none" stroke="#24623b" stroke-width="2.7" stroke-linecap="round"/><path d="M119 67 Q129 63 137 68" fill="none" stroke="#ffb093" stroke-width="1.25" stroke-linecap="round"/></svg></div>
+          <h3>Spicy Chicken Pastil</h3>
+          <p>Chicken pastil with a spicy kick for customers who enjoy bold flavors.</p>
+          <p class="price">₱40</p>
+          <button class="btn btn-primary add-btn" data-product="Spicy Chicken Pastil">Add to Order</button>
+        </article>
+        <article class="card product">
+          <div class="product-icon"><svg viewBox="0 0 160 120" aria-hidden="true"><use href="#pastil-base"/><path d="M106 68 C105 58 114 52 122 52 C131 52 138 59 137 67 C136 77 127 82 118 80 C111 79 106 75 106 68Z" fill="url(#rice-grain-tone)" stroke="#d9d0bc" stroke-width="1.3" filter="url(#pastil-shadow)"/><ellipse cx="121" cy="65" rx="8.7" ry="8.1" fill="url(#egg-yolk-tone)"/><ellipse cx="118" cy="62" rx="2.4" ry="1.7" fill="#fff4c5" opacity=".92"/><path d="M110 73 Q116 78 122 77" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+          <h3>Chicken Pastil with Egg</h3>
+          <p>Chicken pastil served with rice and egg.</p>
+          <p class="price">₱45</p>
+          <button class="btn btn-primary add-btn" data-product="Chicken Pastil with Egg">Add to Order</button>
+        </article>
+        <article class="card product">
+          <div class="product-icon"><svg viewBox="0 0 160 120" aria-hidden="true"><use href="#pastil-base"/><g fill="none" stroke-linecap="round" filter="url(#pastil-shadow)"><path d="M66 60 C72 48 81 45 87 51 C93 57 99 55 107 47" stroke="#e8a14a" stroke-width="4.1"/><path d="M72 55 C78 44 87 42 93 48 C99 54 104 51 113 44" stroke="#bd6b2c" stroke-width="3.6"/><path d="M80 51 C87 41 95 40 100 46 C105 51 112 48 117 42" stroke="#f5c276" stroke-width="3"/><path d="M67 65 C75 57 82 56 88 60 C94 64 102 62 110 55" stroke="#8c431a" stroke-width="2.4"/><path d="M77 67 Q85 61 91 65 T106 62" stroke="#f1ad56" stroke-width="2.8"/></g></svg></div>
+          <h3>Extra Chicken Pastil</h3>
+          <p>Chicken pastil with an extra serving of flavorful shredded chicken.</p>
+          <p class="price">₱50</p>
+          <button class="btn btn-primary add-btn" data-product="Extra Chicken Pastil">Add to Order</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- 5. ORDER -->
+    <section id="order" class="section">
+      <h2>Place Your Order</h2>
+      <div class="two-col">
+        <div class="card">
+          <label for="customer-name">Customer Name</label>
+          <input type="text" id="customer-name" placeholder="Enter your name">
+
+          <label for="product-select">Select Product</label>
+          <select id="product-select">
+            <option value="">-- Select a product --</option>
+            <option value="Regular Chicken Pastil">Regular Chicken Pastil - ₱35</option>
+            <option value="Spicy Chicken Pastil">Spicy Chicken Pastil - ₱40</option>
+            <option value="Chicken Pastil with Egg">Chicken Pastil with Egg - ₱45</option>
+            <option value="Extra Chicken Pastil">Extra Chicken Pastil - ₱50</option>
+          </select>
+
+          <label for="quantity">Quantity</label>
+          <input type="number" id="quantity" min="1" placeholder="e.g. 2">
+
+          <label for="special-request">Special Request (optional)</label>
+          <input type="text" id="special-request" placeholder="e.g. Less spicy">
+
+          <div class="btn-row">
+            <button id="calculate-btn" class="btn btn-primary">Calculate Total</button>
+            <button id="place-order-btn" class="btn btn-accent">Place Order</button>
+            <button id="clear-order-btn" class="btn btn-outline">Clear Order</button>
+          </div>
+          <p id="order-error" class="message error" role="alert"></p>
+        </div>
+
+        <div class="card result-card">
+          <h3>Order Summary</h3>
+          <div id="order-summary" class="output"><p class="muted">Your order summary will appear here.</p></div>
+          <div id="order-confirmation" class="output"></div>
+        </div>
+      </div>
+
+      <!-- 9. QUICK PRICE CALCULATOR -->
+      <div class="card calculator">
+        <h3>Quick Price Calculator</h3>
+        <div class="calc-row">
+          <div>
+            <label for="calc-product">Product</label>
+            <select id="calc-product">
+              <option value="">-- Select a product --</option>
+              <option value="Regular Chicken Pastil">Regular Chicken Pastil - ₱35</option>
+              <option value="Spicy Chicken Pastil">Spicy Chicken Pastil - ₱40</option>
+              <option value="Chicken Pastil with Egg">Chicken Pastil with Egg - ₱45</option>
+              <option value="Extra Chicken Pastil">Extra Chicken Pastil - ₱50</option>
+            </select>
+          </div>
+          <div>
+            <label for="calc-quantity">Quantity</label>
+            <input type="number" id="calc-quantity" min="1" placeholder="e.g. 3">
+          </div>
+          <button id="calc-btn" class="btn btn-primary">Calculate</button>
+          <button id="calc-reset-btn" class="btn btn-outline">Reset Calculator</button>
+        </div>
+        <div id="calc-result" class="output"></div>
+      </div>
+    </section>
+
+    <!-- 10. FEEDBACK -->
+    <section id="feedback" class="section alt">
+      <h2>We'd Love Your Feedback</h2>
+      <div class="two-col">
+        <form id="feedback-form" class="card" novalidate>
+          <label for="fb-name">Name</label>
+          <input type="text" id="fb-name" placeholder="Your name">
+
+          <label for="fb-rating">Rating</label>
+          <select id="fb-rating">
+            <option value="">-- Select a rating --</option>
+            <option value="5">★★★★★</option>
+            <option value="4">★★★★</option>
+            <option value="3">★★★</option>
+            <option value="2">★★</option>
+            <option value="1">★</option>
+          </select>
+
+          <label for="fb-comment">Comment</label>
+          <textarea id="fb-comment" rows="4" placeholder="Tell us what you think"></textarea>
+
+          <button type="submit" id="feedback-btn" class="btn btn-primary">Submit Feedback</button>
+          <p id="feedback-message" class="message" role="alert"></p>
+        </form>
+
+        <div class="card">
+          <h3>Customer Reviews</h3>
+          <div id="reviews">
+            <p id="no-reviews" class="muted">No reviews yet. Be the first to leave one!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. WHY CHOOSE -->
+    <section class="section">
+      <h2>Why Choose Pastilicious</h2>
+      <div class="grid-4">
+        <div class="card center"><div class="big-icon">😋</div><h3>Delicious</h3><p>Enjoy flavorful chicken pastil prepared for a satisfying meal.</p></div>
+        <div class="card center"><div class="big-icon">💰</div><h3>Affordable</h3><p>Simple meals at reasonable prices.</p></div>
+        <div class="card center"><div class="big-icon">🍽️</div><h3>Filling</h3><p>Chicken pastil served with rice for a satisfying meal.</p></div>
+        <div class="card center"><div class="big-icon">📱</div><h3>Convenient</h3><p>Easy menu browsing and ordering through our website.</p></div>
+      </div>
+    </section>
+
+    <!-- 12. HOW IT WORKS -->
+    <section class="section alt">
+      <h2>How Pastilicious Works</h2>
+      <div class="grid-4">
+        <div class="card center step"><span class="step-num">01</span><div class="big-icon">📖</div><h3>Browse the Menu</h3></div>
+        <div class="card center step"><span class="step-num">02</span><div class="big-icon">👆</div><h3>Choose Your Meal</h3></div>
+        <div class="card center step"><span class="step-num">03</span><div class="big-icon">📝</div><h3>Place Your Order</h3></div>
+        <div class="card center step"><span class="step-num">04</span><div class="big-icon">🍛</div><h3>Enjoy Your Pastil</h3></div>
+      </div>
+    </section>
+
+    <!-- 13. CONTACT -->
+    <section id="contact" class="section">
+      <h2>Contact</h2>
+      <div class="card center contact-card">
+        <h3>Pastilicious</h3>
+        <p>Thank you for visiting Pastilicious!</p>
+        <p><strong>Email:</strong> <a href="mailto:pastilicious@example.com">pastilicious@example.com</a></p>
+        <p><strong>Phone:</strong> 0912-345-678</p>
+        <p><strong>Location:</strong> Cebu City, Philippines</p>
+        <p class="muted small">Note: This is sample contact information for a school project, not real business details.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 14. FOOTER -->
+  <footer class="footer">
+    <h3>PASTILICIOUS</h3>
+    <p>"Simple. Flavorful. Satisfying."</p>
+    <p class="small">© 2026 Pastilicious — Event-Driven Programming Final Project</p>
+  </footer>
+
+  <!-- All interactivity lives in main.py -->
+  <script type="py" src="./main.py"></script>
+</body>
+</html>
